@@ -13,6 +13,15 @@ import express from 'express';
 const app = express();
 
 connectDB()
+.then(() => {
+  
+  app.listen(process.env.PORT || 8000 , () => {
+    console.log(`app listening on ${process.env.PORT}`);
+  })
+})
+.catch((err) => {
+  console.log("MongoDB connection Failed : ",err);
+})
 
 
 
