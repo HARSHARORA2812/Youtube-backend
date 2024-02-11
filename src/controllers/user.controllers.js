@@ -8,9 +8,6 @@ const registerUser = asyncHandler(async (req,res)=> {
    
   const {fullName , username , email, password} = req.body;
 
-  console.log("Email : ", email)
-
-
   // if(fullName === ""){
   //   throw new ApiError(400 , "Fullname required")
   // }
@@ -23,7 +20,7 @@ const registerUser = asyncHandler(async (req,res)=> {
       throw new ApiError(400 , "All feilds are required") 
   }
    
-  const existUser = User.findOne({
+  const existUser = await User.findOne({
      
      $or : [{ username } , { email }]
      
@@ -43,18 +40,19 @@ const registerUser = asyncHandler(async (req,res)=> {
   const avatar = await uploadOnCloudibary(avatarLocalPath);
   const coverImage  = await uploadOnCloudibary(coverImageLocalPath);
 
-  if (avatar) {
+  if (!avatar) {
     throw new ApiError(400 , "avatar file is required ")
   }
 
   const user = await User.create({
     fullName ,
-    avatar : avatar.url,
-    coverImage : coverImage?.url || "",
+    avatar : avatar.links,
+    coverImage : coverImage?.links || "",
     email,
     password,
     username : username.toLowerCase()
   })
+  
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
   )
