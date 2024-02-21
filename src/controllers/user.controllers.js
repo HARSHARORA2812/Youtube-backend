@@ -8,12 +8,6 @@ const registerUser = asyncHandler(async (req,res)=> {
    
   const {fullName , username , email, password} = req.body;
 
-  // if(fullName === ""){
-  //   throw new ApiError(400 , "Fullname required")
-  // }
-
-  // -- i have to check every single onle like that but i am using sum property of array to concore this but i can use above code also to make it work
-
   if (
     [fullName , username , email, password].some((feild) => feild?.trim() === "")
     ) {
@@ -43,16 +37,18 @@ const registerUser = asyncHandler(async (req,res)=> {
   if (!avatar) {
     throw new ApiError(400 , "avatar file is required ")
   }
+  
+   console.log(avatar.url);
 
   const user = await User.create({
     fullName ,
-    avatar : avatar.links,
-    coverImage : coverImage?.links || "",
+    avatar : avatar.url,
+    coverImage : coverImage?.url || "",
     email,
     password,
     username : username.toLowerCase()
   })
-  
+
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
   )
