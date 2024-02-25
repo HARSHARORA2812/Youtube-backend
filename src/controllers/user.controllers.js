@@ -1,7 +1,7 @@
 import { ApiError } from "../utils/apiError.js";
 import {asyncHandler} from "../utils/asyncHandler.js";
 import {User} from "../models/user.models.js"
-import {uploadOnCloudibary} from "../utils/cloudnery.js"
+import {uploadOnCloudibary , deleteFromCloudinary} from "../utils/cloudnery.js"
 import { ApiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken"
 
@@ -249,13 +249,18 @@ const updateAcountDetails = asyncHandler(async (req,res) => {
 })
 
 const updateUserAvatar = asyncHandler(async(req,res) => {
+
+  const usER =await findById(req.user._id)
+
+  const oldAvatar = usER.avatar;
+
   const avtarLocalPath = req.file?.path
 
   if (!updateUserAvatar) {
    throw new ApiError(400 , "Avatar file is missing")
   }
 
-  const avatar = await uploadOnCloudibary(updateUserAvatar)
+  const avatar = await uploadOnCloudibary(avatarLocalPath)
 
   if (!avatar) {
     throw new ApiError(400,"Error while uploding avatar")
@@ -269,14 +274,22 @@ const updateUserAvatar = asyncHandler(async(req,res) => {
     } ,
     {new : true}) .seclect("-password")
 
+    await deleteFromCloudinary(oldAvatar);
+
     return res
     .status(200)
     .json( new ApiResponse(200 , user , "Avatar Uploded"))
+
+
 
 })
 
 const updateUserCoverImage = asyncHandler(async(req,res) => {
   const avtarLocalPath = req.file?.path
+
+  const usER =await findById(req.user._id)
+
+  const oldcoverImage = usER.coverImage;
 
   if (!updateUserCoverImage) {
    throw new ApiError(400 , "CoverImage file is missing")
@@ -296,11 +309,83 @@ const updateUserCoverImage = asyncHandler(async(req,res) => {
     } ,
     {new : true}) .seclect("-password")
 
+    await deleteFromCloudinary(oldcoverImage);
+
     return res
     .status(200)
     .json( new ApiResponse(200 , user , "CoverImage Uploded"))
 
 })
+
+const getUserChannelProfile = asyncHandler(async (req,res) => {
+  const {username} = req.params
+
+  if (!username?.trim()) {
+    throw new ApiError(400,"User name is missing");
+  }
+  
+  const channel = await User.aggregate([
+    {
+      $match : {
+        username : username?.toLowerCase()
+      }
+    },
+    {
+      $lookup : {
+        from : "subscriptions",
+        localField : "_id",
+        foreignField : "channel",
+        as : "subscribers"
+      }
+    },
+    {
+      $lookup : {
+        from : "subscriptions",
+        localField : "_id",
+        foreignField : "subscriber",
+        as : "subscribedTo"
+      }
+    },
+    {
+      $addFields : {
+        subscriberCount : {
+          $size : "$subscribers"
+        },
+        channelsSubscribesToCount : {
+          $size : "$subscribedTo"
+        },
+        isSubscribed : {
+          if : {$in : [req.user?._id,"$subscribers.subscriber"]},
+          then : true,
+          else : false
+        }
+      }
+    },
+    {
+      $project : {
+        fullname : 1,
+        username : 1,
+        subscriberCount : 1,
+        channelsSubscribesToCount : 1,
+        isSubscribed : 1 ,
+        avatar : 1,
+        coverImage : 1,
+        email : 1 
+      }
+    } 
+
+  ])
+
+    if(!channel?.length){
+      throw new ApiError(404 , "channel does not exists")
+    }
+    
+   return res
+   .status(200)
+   .json( new ApiResponse(200 , channel[0] , "User channel featched successfully "))
+
+})
+ 
 
 
 export {
@@ -312,5 +397,6 @@ export {
   getCurrentUser,
   updateAcountDetails,
   updateUserAvatar,
-  updateUserCoverImage
+  updateUserCoverImage,
+  getUserChannelProfile
 } 
