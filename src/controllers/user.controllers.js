@@ -4,6 +4,7 @@ import {User} from "../models/user.models.js"
 import {uploadOnCloudibary , deleteFromCloudinary} from "../utils/cloudnery.js"
 import { ApiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose"
 
 const GenerateAccessAndRefreshToken = (async(userId)=>{
   try {
@@ -250,11 +251,11 @@ const updateAcountDetails = asyncHandler(async (req,res) => {
 
 const updateUserAvatar = asyncHandler(async(req,res) => {
 
-  const usER =await findById(req.user._id)
+  // const usER = await User.findById(req.user._id)
 
-  const oldAvatar = usER.avatar;
+  // const oldAvatar = usER.avatar;
 
-  const avtarLocalPath = req.file?.path
+  const avatarLocalPath = req.file?.path
 
   if (!updateUserAvatar) {
    throw new ApiError(400 , "Avatar file is missing")
@@ -272,9 +273,9 @@ const updateUserAvatar = asyncHandler(async(req,res) => {
         avatar : avatar.url
       }
     } ,
-    {new : true}) .seclect("-password")
+    {new : true}).seclect("-password")
 
-    await deleteFromCloudinary(oldAvatar);
+    // await deleteFromCloudinary(oldAvatar);
 
     return res
     .status(200)
@@ -391,7 +392,7 @@ const getWatchHistory = asyncHandler(async (req,res) => {
   const user = await User.aggregate([
     {
       $match : {
-          _id : new mongoose.Types.ObjectId(req.user._id);
+          _id : new mongoose.Types.ObjectId(req.user._id)
       }
     },
     {

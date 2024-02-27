@@ -35,7 +35,7 @@ router.route("/logout").post(verifyJWT , logOutUser)
 
 router.route("/refresh-token").post(refreshAccessToken)
 
-router.route("/hange-password").post( verifyJWT , changeCurrentPassword)
+router.route("/change-password").post( verifyJWT , changeCurrentPassword)
 
 router.route("/current-user").get(verifyJWT , getCurrentUser)
 
