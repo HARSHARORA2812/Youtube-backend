@@ -1,4 +1,5 @@
 import mongoose , {Schema} from "mongoose"
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2"
 
 const commentSchmea = new Schema({
   content : {
@@ -14,5 +15,7 @@ const commentSchmea = new Schema({
     ref : "Video",
   }
 })
+
+videoSchema.plugin(mongooseAggregatePaginate)
 
 export const Comments = mongoose.model("Comments" , commentSchmea)
