@@ -286,7 +286,8 @@ const updateUserAvatar = asyncHandler(async(req,res) => {
 })
 
 const updateUserCoverImage = asyncHandler(async(req,res) => {
-  const avtarLocalPath = req.file?.path
+
+  const coverImageLocalPath = req.file?.path
 
   const usER =await findById(req.user._id)
 
@@ -296,7 +297,7 @@ const updateUserCoverImage = asyncHandler(async(req,res) => {
    throw new ApiError(400 , "CoverImage file is missing")
   }
 
-  const CoverImage = await uploadOnCloudibary(updateUserCoverImage)
+  const CoverImage = await uploadOnCloudibary(coverImageLocalPath)
 
   if (!CoverImage) {
     throw new ApiError(400,"Error while uploding avatar")
