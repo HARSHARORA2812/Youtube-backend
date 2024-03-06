@@ -5,7 +5,6 @@ import {Like} from "../models/like.model.js"
 import {ApiError} from "../utils/apiError.js"
 import {ApiResponse} from "../utils/apiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
-import { userisOwner } from "./playlist.controllers.js"
 
 const getChannelStats = asyncHandler(async (req, res) => {
 
